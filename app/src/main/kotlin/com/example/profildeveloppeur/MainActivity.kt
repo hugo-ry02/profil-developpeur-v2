@@ -13,23 +13,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProfilDeveloppeurTheme {
                 DeveloperProfileScreen(
-                    name = "Alexandre Martin",
-                    role = "Développeur Android Junior",
-                    description = "Étudiant passionné par Kotlin et le développement mobile moderne. À la recherche d'une alternance pour concevoir des applications performantes avec Jetpack Compose.",
-                    skills = listOf(
-                        "Kotlin & Coroutines",
-                        "Jetpack Compose & Material 3",
-                        "Git & GitHub",
-                        "Architecture Android (bases)"
-                    ),
-                    availability = "Disponible pour une alternance (Septembre 2026)",
-                    isAvailable = true,
-                    actionButtonText = "Contacter",
-                    onActionClick = {
-                        // Clic sur le bouton contacter
+                    profile = sampleDeveloperProfile(),
+                    onContactClick = {
+                        // Action de contact à implémenter plus tard
                     },
-                    onAvailabilityClick = {
-                        // Clic sur le badge de disponibilité
+                    onProjectClick = {
+                        // Action sur un projet à implémenter plus tard
                     }
                 )
             }

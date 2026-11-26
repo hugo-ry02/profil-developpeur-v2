@@ -1,285 +1,390 @@
 package com.example.profildeveloppeur
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.WorkOutline
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.profildeveloppeur.ui.theme.ProfilDeveloppeurTheme
 
-// Écran principal avec Scaffold et innerPadding
+// Écran principal du profil développeur organisé dans une LazyColumn
 @Composable
 fun DeveloperProfileScreen(
-    name: String,
-    role: String,
-    description: String,
-    skills: List<String>,
-    availability: String,
-    isAvailable: Boolean = true,
-    actionButtonText: String = "Contacter",
-    onActionClick: () -> Unit = {},
-    onAvailabilityClick: () -> Unit = {},
+    profile: DeveloperProfileUi,
+    onContactClick: () -> Unit = {},
+    onProjectClick: (ProjectUi) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
-        ProfileCard(
-            name = name,
-            role = role,
-            description = description,
-            skills = skills,
-            availability = availability,
-            isAvailable = isAvailable,
-            actionButtonText = actionButtonText,
-            onActionClick = onActionClick,
-            onAvailabilityClick = onAvailabilityClick,
+        LazyColumn(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxWidth()
-        )
-    }
-}
-
-// Carte principale contenant les informations du profil
-@Composable
-fun ProfileCard(
-    name: String,
-    role: String,
-    description: String,
-    skills: List<String>,
-    availability: String,
-    isAvailable: Boolean,
-    actionButtonText: String,
-    onActionClick: () -> Unit,
-    onAvailabilityClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        tonalElevation = 2.dp,
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            ProfileHeader(
-                name = name,
-                role = role,
-                description = description,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Text(
-                text = "Compétences clés",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-            )
-
-            skills.forEach { skill ->
-                SkillItem(
-                    skill = skill,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 3.dp)
+            item {
+                ProfileHeaderSection(
+                    name = profile.name,
+                    role = profile.role,
+                    location = profile.location,
+                    description = profile.description,
+                    isAvailable = profile.isAvailable
                 )
             }
 
-            AvailabilityBadge(
-                availability = availability,
-                isAvailable = isAvailable,
-                onClick = onAvailabilityClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp, bottom = 8.dp)
-            )
+            item {
+                SkillsSection(skills = profile.skills)
+            }
 
-            ProfileAction(
-                buttonText = actionButtonText,
-                onActionClick = onActionClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
+            item {
+                Text(
+                    text = "Projets & Expériences",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            items(
+                items = profile.projects,
+                key = { project -> project.id }
+            ) { project ->
+                ProjectCard(
+                    project = project,
+                    onClick = { onProjectClick(project) }
+                )
+            }
+
+            item {
+                ContactSection(
+                    email = profile.email,
+                    availability = profile.availability
+                )
+            }
+
+            item {
+                ProfileActionButton(
+                    buttonText = "Contacter",
+                    onClick = onContactClick
+                )
+            }
+        }
+    }
+}
+
+// Zone d'avatar avec badge superposé grâce à Box
+@Composable
+fun ProfileAvatarBox(
+    developerName: String,
+    isAvailable: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.size(76.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_developer_avatar),
+            contentDescription = "Avatar de $developerName",
+            modifier = Modifier
+                .size(72.dp)
+                .align(Alignment.Center)
+        )
+        if (isAvailable) {
+            Surface(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Text(
+                    text = "Dispo",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+        }
+    }
+}
+
+// En-tête du profil regroupé dans une Surface avec Row et Column
+@Composable
+fun ProfileHeaderSection(
+    name: String,
+    role: String,
+    location: String,
+    description: String,
+    isAvailable: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ProfileAvatarBox(
+                    developerName = name,
+                    isAvailable = isAvailable
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = role,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "Localisation",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = location,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
-// En-tête avec nom, rôle et description
+// Puce réutilisable pour une compétence
 @Composable
-fun ProfileHeader(
-    name: String,
-    role: String,
-    description: String,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = name,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = role,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(top = 2.dp)
-        )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-        )
-    }
-}
-
-// Badge pour une compétence
-@Composable
-fun SkillItem(
+fun SkillChip(
     skill: String,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier,
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surfaceVariant
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
     ) {
         Text(
-            text = "• $skill",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            text = skill,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
         )
     }
 }
 
-// Zone cliquable personnalisée pour la disponibilité
+// Liste horizontale de compétences avec LazyRow
 @Composable
-fun AvailabilityBadge(
-    availability: String,
-    isAvailable: Boolean,
-    onClick: () -> Unit = {},
+fun SkillsSection(
+    skills: List<String>,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = if (isAvailable) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.secondaryContainer
-    }
-
-    val contentColor = if (isAvailable) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    }
-
-    Surface(
-        modifier = modifier
-            .semantics {
-                role = Role.Button
-                contentDescription = "Statut de disponibilité : $availability. Cliquez pour interagir."
-            }
-            .clickable(onClick = onClick),
-        shape = MaterialTheme.shapes.small,
-        color = containerColor
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = if (isAvailable) "✓ $availability" else "⏳ $availability",
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = contentColor,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            text = "Compétences",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground
         )
+        Spacer(modifier = Modifier.height(10.dp))
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(skills) { skill ->
+                SkillChip(skill = skill)
+            }
+        }
     }
 }
 
-// Bouton d'action principal
+// Carte réutilisable pour afficher un projet ou une expérience
 @Composable
-fun ProfileAction(
+fun ProjectCard(
+    project: ProjectUi,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Code,
+                    contentDescription = "Icône projet",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = project.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = project.year,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = project.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = project.techStack,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+// Zone de contact utilisant des OutlinedTextField en lecture seule
+@Composable
+fun ContactSection(
+    email: String,
+    availability: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Contact & Disponibilité",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(text = "Email") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = "Email"
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
+                value = availability,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(text = "Disponibilité") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.WorkOutline,
+                        contentDescription = "Disponibilité"
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+// Bouton d'action principal avec icône et callback
+@Composable
+fun ProfileActionButton(
     buttonText: String,
-    onActionClick: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Button(
-        onClick = onActionClick,
-        modifier = modifier
+        onClick = onClick,
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier.fillMaxWidth()
     ) {
-        Text(text = buttonText)
-    }
-}
-
-// Previews
-@Preview(showBackground = true, name = "Profil Android Junior - Disponible")
-@Composable
-fun PreviewDeveloperProfileJunior() {
-    ProfilDeveloppeurTheme {
-        DeveloperProfileScreen(
-            name = "Alexandre Martin",
-            role = "Développeur Android Junior",
-            description = "Étudiant passionné par Kotlin et le développement mobile moderne. À la recherche d'une alternance pour concevoir des applications performantes avec Jetpack Compose.",
-            skills = listOf(
-                "Kotlin & Coroutines",
-                "Jetpack Compose & Material 3",
-                "Git & GitHub",
-                "Architecture Android (bases)"
-            ),
-            availability = "Disponible pour une alternance (Septembre 2026)",
-            isAvailable = true,
-            actionButtonText = "Contacter par email",
-            onActionClick = {
-                // Clic contacter
-            },
-            onAvailabilityClick = {
-                // Clic statut
-            }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.Send,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
         )
-    }
-}
-
-@Preview(showBackground = true, name = "Profil Développeuse Senior - En mission")
-@Composable
-fun PreviewDeveloperProfileSenior() {
-    ProfilDeveloppeurTheme {
-        DeveloperProfileScreen(
-            name = "Sophie Dubois",
-            role = "Lead Développeuse Mobile & Cloud",
-            description = "Plus de 6 ans d'expérience dans l'écosystème mobile et back-end. Spécialisée dans la conception d'interfaces déclaratives et d'architectures résilientes.",
-            skills = listOf(
-                "Jetpack Compose & Kotlin Multiplatform",
-                "API REST & Microservices",
-                "CI/CD Mobile & Automatisation",
-                "UI Testing & Accessibilité (WCAG)"
-            ),
-            availability = "Actuellement en mission (disponible dès Janvier 2027)",
-            isAvailable = false,
-            actionButtonText = "Voir le portfolio",
-            onActionClick = {
-                // Clic portfolio
-            },
-            onAvailabilityClick = {
-                // Clic statut
-            }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = buttonText,
+            style = MaterialTheme.typography.labelLarge
         )
     }
 }
