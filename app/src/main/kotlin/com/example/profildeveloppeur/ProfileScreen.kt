@@ -36,14 +36,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.profildeveloppeur.ui.theme.ProfilDeveloppeurTheme
 
 // Écran principal du profil développeur organisé dans une LazyColumn
 @Composable
 fun DeveloperProfileScreen(
     profile: DeveloperProfileUi,
     onContactClick: () -> Unit = {},
-    onProjectClick: (ProjectUi) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
@@ -81,10 +82,7 @@ fun DeveloperProfileScreen(
                 items = profile.projects,
                 key = { project -> project.id }
             ) { project ->
-                ProjectCard(
-                    project = project,
-                    onClick = { onProjectClick(project) }
-                )
+                ProjectCard(project = project)
             }
 
             item {
@@ -251,11 +249,9 @@ fun SkillsSection(
 @Composable
 fun ProjectCard(
     project: ProjectUi,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
@@ -385,6 +381,37 @@ fun ProfileActionButton(
         Text(
             text = buttonText,
             style = MaterialTheme.typography.labelLarge
+        )
+    }
+}
+
+// Previews thème clair et thème sombre
+@Preview(
+    showBackground = true,
+    heightDp = 1120,
+    name = "Profil Développeur - Light Theme"
+)
+@Composable
+fun DeveloperProfileLightPreview() {
+    ProfilDeveloppeurTheme(darkTheme = false) {
+        DeveloperProfileScreen(
+            profile = sampleDeveloperProfile(),
+            onContactClick = {}
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    heightDp = 1120,
+    name = "Profil Développeur - Dark Theme"
+)
+@Composable
+fun DeveloperProfileDarkPreview() {
+    ProfilDeveloppeurTheme(darkTheme = true) {
+        DeveloperProfileScreen(
+            profile = sampleDeveloperProfile(),
+            onContactClick = {}
         )
     }
 }

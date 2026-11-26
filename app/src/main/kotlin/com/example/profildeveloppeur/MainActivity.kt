@@ -16,9 +16,6 @@ class MainActivity : ComponentActivity() {
                     profile = sampleDeveloperProfile(),
                     onContactClick = {
                         // Action de contact à implémenter plus tard
-                    },
-                    onProjectClick = {
-                        // Action sur un projet à implémenter plus tard
                     }
                 )
             }
